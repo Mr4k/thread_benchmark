@@ -1,4 +1,4 @@
-use std::{sync::Arc, sync::{Mutex}, thread};
+use std::{sync::Arc, sync::{Mutex}, thread, thread::JoinHandle};
 use std::env;
 
 mod locking_counter;
@@ -13,15 +13,16 @@ fn main() {
     
     let counters: Vec<Arc<LockingCounter>> = (0..num_threads).map(|_| { Arc::new(LockingCounter{count: Mutex::new(0)}) }).collect();
     
-    let handles = (0..num_threads).map(|thread_id| {
+    let handles: Vec<JoinHandle<u64>> = (0..num_threads).map(|thread_id| {
         let counter = Arc::clone(&counters[thread_id]);
-        thread::spawn(move || {
+        let res = thread::spawn(move || {
             for _ in 0..num_writes {
                 counter.increment();
             }
             counter.fetch()
-        })
-    });
+        });
+        res
+    }).collect();
 
     let mut sum = 0;
     for h in handles {

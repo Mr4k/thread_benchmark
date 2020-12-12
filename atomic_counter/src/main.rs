@@ -1,4 +1,4 @@
-use std::{sync::Arc, sync::atomic::AtomicU64, thread};
+use std::{sync::Arc, sync::atomic::AtomicU64, thread, thread::JoinHandle};
 use std::env;
 
 mod atomic_counter;
@@ -13,14 +13,14 @@ fn main() {
     
     let counter = Arc::new(LockingCounter{count: AtomicU64::new(0)});
     
-    let handles = (0..num_threads).map(|_| {
+    let handles: Vec<JoinHandle<_>> = (0..num_threads).map(|_| {
         let counter  = Arc::clone(&counter);
         thread::spawn(move || {
             for _ in 0..num_writes {
                 counter.increment();
             }
         })
-    });
+    }).collect();
 
     for h in handles {
         h.join().unwrap();

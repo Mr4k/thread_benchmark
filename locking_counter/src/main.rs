@@ -1,4 +1,4 @@
-use std::{sync::Arc, sync::{Mutex, /*RwLock*/}, thread};
+use std::{sync::Arc, sync::{Mutex, /*RwLock*/}, thread, thread::JoinHandle};
 //use std::time::Duration;
 use std::env;
 
@@ -14,14 +14,14 @@ fn main() {
     
     let counter = Arc::new(LockingCounter{count: Mutex::new(0)});
     
-    let handles = (0..num_threads).map(|_| {
+    let handles: Vec<JoinHandle<_>> = (0..num_threads).map(|_| {
         let counter  = Arc::clone(&counter);
         thread::spawn(move || {
             for _ in 0..num_writes {
                 counter.increment();
             }
         })
-    });
+    }).collect();
 
     for h in handles {
         h.join().unwrap();
