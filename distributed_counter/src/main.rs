@@ -1,9 +1,9 @@
-use std::{sync::Arc, sync::{RwLock}, thread};
+use std::{sync::Arc, sync::{Mutex}, thread};
 use std::env;
 
-mod distributed_counter;
+mod locking_counter;
 
-use distributed_counter::LockingCounter;
+use locking_counter::LockingCounter;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -11,20 +11,22 @@ fn main() {
     let num_threads: usize = args[1].parse().unwrap();
     let num_writes: usize = args[2].parse().unwrap();
     
-    let counter = Arc::new(LockingCounter{counts: (0..(num_threads * 20)).map(|_| { RwLock::new(0) }).collect()});
+    let counters: Vec<Arc<LockingCounter>> = (0..num_threads).map(|_| { Arc::new(LockingCounter{count: Mutex::new(0)}) }).collect();
     
     let handles = (0..num_threads).map(|thread_id| {
-        let counter  = Arc::clone(&counter);
+        let counter = Arc::clone(&counters[thread_id]);
         thread::spawn(move || {
             for _ in 0..num_writes {
-                counter.increment(thread_id);
+                counter.increment();
             }
+            counter.fetch()
         })
     });
 
+    let mut sum = 0;
     for h in handles {
-        h.join().unwrap();
+        sum += h.join().unwrap();
     }
 
-    assert_eq!(counter.fetch(), (num_threads * num_writes) as u64)
+    assert_eq!(sum, (num_threads * num_writes) as u64)
 }
