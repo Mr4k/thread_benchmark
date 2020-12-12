@@ -27,5 +27,5 @@ fn main() {
         h.join().unwrap();
     }
 
-    assert_eq!(counter.fetch(), (num_threads as u64) * 100000)
+    assert_eq!(counter.fetch(), (num_threads * num_writes) as u64)
 }
