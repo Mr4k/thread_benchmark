@@ -1,5 +1,7 @@
-all: atomic distributed locking
+all: atomic distributed locking yolo
 	@echo "Done"
+yolo:
+	cd yolo_counter && cargo build --release
 atomic:
 	cd atomic_counter && cargo build --release
 distributed:
