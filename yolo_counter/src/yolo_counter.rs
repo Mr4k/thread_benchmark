@@ -1,8 +1,8 @@
-pub struct LockingCounter {
+pub struct YoloCounter {
     pub count: u64,
 }
 
-impl LockingCounter {
+impl YoloCounter {
     pub fn increment(&self) {
         unsafe {
             // below is an unholy incantation to get a mut pointer to a non mut reference
