@@ -6,7 +6,7 @@ pub struct LockingCounter {
 
 impl LockingCounter {	
     pub fn increment(&self, thread_id: usize) {	
-        let lock = &self.counts[thread_id];	
+        let lock = &self.counts[thread_id * 20];	
         let mut val = lock.write().unwrap();	
         *val += 1;	
     }	
