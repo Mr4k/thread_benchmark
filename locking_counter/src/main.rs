@@ -30,5 +30,5 @@ fn main() {
         h.join().unwrap();
     }
 
-    assert_eq!(counter.fetch(), (num_threads * num_total_writes) as u64)
+    assert_eq!(counter.fetch(), num_total_writes as u64)
 }
